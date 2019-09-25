@@ -1,0 +1,76 @@
+#!/bin/bash
+: '
+Title           : configure
+Author          : Keisuke Suzuki
+Created on      : 9/24/19
+'
+
+#check if some of or all args are empty
+function check_args() {
+    if [ -z "$A" ] || [ -z "$B" ] || [ -z "$C" ]; then
+    echo "Some or all of values entered are empty"
+    display_usage
+fi
+}
+
+#display usage
+function display_usage() {
+    echo ""
+    echo "Usage: $0 -a A -b B -c C"
+    echo -e "\t-a mysql server hostname"
+    echo -e "\t-b mysql username"
+    echo -e "\t-c database to use"
+    exit 1
+}
+
+#show input value
+function show_args() {
+    printf "\nhostname\t: %s\n" "$A"
+    printf "username\t: %s\n" "$B"
+    printf "database name\t: %s\n\n" "$C"
+}
+
+#ask user to continue
+function ask_usr() {
+    while true; do
+        printf "This will overwrite existing \".env\" in this project.\n%s"\
+               "Are you sure?[y/n]: "
+        read -r input
+
+        case $input in
+            [yY]*)
+                echo -e "HOST=$A\nUSERNAME=$B\nDATABASE=$C" >.env
+                echo "configured successfully"
+                break
+                ;;
+            [nN]*)
+                echo 'Ok, exiting'
+                exit 1
+                ;;
+            *)
+                printf "please enter [y/n]: " >&2
+                ;;
+        esac
+    done
+}
+
+#write values to .env
+function write_env() {
+    local OPTIND
+    while getopts "a:b:c:" opt; do
+        case "$opt" in
+            a) A=$OPTARG ;;
+            b) B=$OPTARG ;;
+            c) C=$OPTARG ;;
+            ?) display_usage ;;
+        esac
+    done
+    show_args
+    check_args
+    ask_usr
+}
+
+#create .env
+touch .env
+write_env $"$@"
+#exit
