@@ -3,11 +3,15 @@
 Title           : configure
 Author          : Keisuke Suzuki
 Created on      : 9/24/19
+Description     : This script will create .env file in project root and set
+                  host address, username, and database name to store, to
+                  given values. It must be run before building the
+                  application except the case user set .env file manually.
 '
 
 #check if some of or all args are empty
 function check_args() {
-    if [ -z "$A" ] || [ -z "$B" ] || [ -z "$C" ]; then
+    if [[ -z "$A" ]] || [[ -z "$B" ]] || [[ -z "$C" ]]; then
     echo "Some or all of values entered are empty"
     display_usage
 fi
@@ -37,7 +41,7 @@ function ask_usr() {
                "Are you sure?[y/n]: "
         read -r input
 
-        case $input in
+        case ${input} in
             [yY]*)
                 echo -e "HOST=$A\nUSERNAME=$B\nDATABASE=$C" >.env
                 echo "configured successfully"
@@ -73,4 +77,6 @@ function write_env() {
 #create .env
 touch .env
 write_env $"$@"
+#chenge permission on install
+chmod +x install
 #exit
