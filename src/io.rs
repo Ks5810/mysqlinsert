@@ -2,6 +2,7 @@
 Title           : io.rs
 Author          : Keisuke Suzuki
 Created on      : 9/25/19
+
 *******************************************************************************/
 use std::path::Path;
 use std::fs::File;
@@ -85,7 +86,7 @@ pub fn get_commands(user:String, pass:String)->Commands{
 pub fn insert(commands:Commands, data_base: &str, file_name: &str) {
     Command::new("mysqlimport")
     .arg("--ignore-lines=1")
-    .arg("--fields-terminated-by=:")
+    .arg("--fields-terminated-by=,")
     .arg("--local")
     .arg(commands.user)
     .arg(commands.pass)

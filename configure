@@ -3,10 +3,10 @@
 Title           : configure
 Author          : Keisuke Suzuki
 Created on      : 9/24/19
-Description     : This script will create .env file in project root and set
-                  host address, username, and database name to store, to
-                  given values. It must be run before building the
-                  application except the case user set .env file manually.
+Description     : This script will create a .env file in project root and set
+                  host address, username, and database name to given values. It
+                  must be run before building the application except the case
+                  a user sets .env file manually.
 '
 
 #check if some of or all args are empty

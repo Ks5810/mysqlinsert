@@ -2,10 +2,11 @@
 Title           : mysqlinsert.rs
 Author          : Keisuke Suzuki
 Created on      : 9/25/19
-Description     : A practice rust app that enables inserting a csv formatted
-                  file directly from command line. This app will create a
-                  name as the file without .extension. Tests are not written
-                  yet. For more details, please have a look at README.md
+Description     : A practice rust app that enables creating a table, inserting
+                  a csv formatted file directly from command line. This app
+                  will create a name as the file without .extension. Tests are
+                  not written yet. For more details, please have a look at
+                  README.md
 *******************************************************************************/
 extern crate clap;
 extern crate mysqlinsert;
@@ -35,7 +36,7 @@ fn main() {
     
     let data=matches.is_present("data_file");
     let types=matches.is_present("type_file");
-    if  !data||!types {
+    if  !(data&&types) {
         println!("{}", matches.usage())
         }
     else {

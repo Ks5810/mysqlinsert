@@ -3,11 +3,10 @@
 Title           : install
 Author          : Keisuke Suzuki
 Created on      : 9/24/19
-Description     : This script creates a directory and copies two files
-                  to target directory, and an uninstall script. If
-                  custom prefix is specified, it stores the program to
-                  target-file-path/mysqlinsert, otherwise, in
-                  $HOME/.mysqlinsert
+Description     : This script creates a directory, copies two files
+                  to the directory, and also create an uninstall script. If
+                  custom prefix path is specified, it stores the program in
+                  prefix-path/mysqlinsert, otherwise, in $HOME/.mysqlinsert
 '
 
 target_dir="$1"
@@ -27,7 +26,6 @@ function export_path() {
     else
         printf "neither .bashrc or .profile found in your home directory\n
               please manually add $target_dir to your PATH variable\n"
-
     fi
 }
 
@@ -109,9 +107,9 @@ function install() {
     fi
     export_path
     generate_uninstall
-    echo "uninstall script is generated"
+    echo "uninstall script is generated to $root/uninstall"
     echo "mysqlinsert is installed to $target_dir"
 }
-
+#install mysqlinsert
 install
 

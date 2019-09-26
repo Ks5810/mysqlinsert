@@ -3,8 +3,7 @@ Title           : lib.rs
 Author          : Keisuke Suzuki
 Created on      : Sep 17, 2019
 Description     : lib.rs for practice app
-localhost
-Usage           :
+
 *******************************************************************************/
 pub mod error;
 pub mod my;
@@ -34,7 +33,7 @@ pub fn insert_files(data_file: &str, type_file: &str) -> Result<(), Box<dyn Erro
     let files: Files = check_file(data_file, type_file)?;
     let lines: Lines = get_lines(files)?;
     let values: Values = get_values(&lines);
-    check_fields(values.clone()).unwrap();
+    check_fields(values.clone())?;
     let table_name = get_filename(&file_name);
     let query = String::new();
     my.prep_exec(get_query(query,values, table_name))?;

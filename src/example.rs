@@ -2,7 +2,7 @@
 Title           : example.rs
 Author          : Keisuke Suzuki
 Created on      : 9/25/19
-Modification    :
+
 *******************************************************************************/
 use std::error::Error;
 use std::path::Path;

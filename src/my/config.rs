@@ -23,11 +23,10 @@ impl Env {
     }
     pub fn get_env() -> Env {
         dotenv::dotenv().ok();
-        let pass = Env::get_password();
         Env {
             host: dotenv::var("HOST").unwrap(),
             user: dotenv::var("USERNAME").unwrap(),
-            password: pass,
+            password: Env::get_password(),
             database: dotenv::var("DATABASE").unwrap(),
         }
     }
