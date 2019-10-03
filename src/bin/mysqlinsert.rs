@@ -7,7 +7,8 @@ Description     : A practice rust app that enables creating a table, inserting
                   will create a name as the file without .extension. Tests are
                   not written yet. For more details, please have a look at
                   README.md
-                  Now it supports field separator and line terminator option.
+Modification    : Created on 10/2/19
+                  Added options for field separator and line terminator.
 *******************************************************************************/
 #[macro_use]
 extern crate clap;
@@ -21,9 +22,9 @@ fn main() {
             (version: "1.0")
             (author: "Keisuke Suzuki <e40keisuke@gmail.com>")
             (about: "Reads file and inserts data to MySQL")
-            (@arg SEPARATOR: -f --sparator +takes_value
+            (@arg FIELDSEPARATOR: -f --field +takes_value
                             "Sets a filed separator. Default value is ',' ")
-            (@arg TERMINATOR: -l --terminator +takes_value
+            (@arg LINETERMINATOR: -l --line +takes_value
                             "Sets a terminator. Default value is '/n' ")
             (@arg FIELDFILE: +required "Sets an input file for fields")
             (@arg TYPEFILE: +required "Sets a input file for types"))
@@ -31,8 +32,8 @@ fn main() {
 
     // set separator and terminator to entered value, if options are not
     // selected, set them to ',', '\n' respectively
-    let separator = matches.value_of("SEPARATOR").unwrap_or(",");
-    let terminator = matches.value_of("TERMINATOR").unwrap_or("/n");
+    let separator = matches.value_of("FIELDSEPARATOR").unwrap_or(",");
+    let terminator = matches.value_of("LINETERMINATOR").unwrap_or("/n");
 
     // get input files from arguments. if either or both values are empty,
     // displays usage
