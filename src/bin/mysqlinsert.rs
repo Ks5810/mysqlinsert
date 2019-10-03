@@ -7,43 +7,40 @@ Description     : A practice rust app that enables creating a table, inserting
                   will create a name as the file without .extension. Tests are
                   not written yet. For more details, please have a look at
                   README.md
+                  Now it supports field separator and line terminator option.
 *******************************************************************************/
+#[macro_use]
 extern crate clap;
 extern crate mysqlinsert;
 
-use clap::{App, Arg};
+use mysqlinsert::*;
 
 fn main() {
-    let matches = App::new("mysqlinsert")
-    .version("1.0")
-    .author("Keisuke Suzuki <e40keisuke@gmail.com>")
-    .usage(
-        "mysqlinsert <path to data file> <path \
-             to type file>")
-    .args(&[
-        Arg::with_name("data_file")
-        .required(true)
-        .index(1)
-        .help("file with comma separated field names")
-        .value_name("data_file"),
-        Arg::with_name("type_file")
-        .required(true)
-        .index(2)
-        .help("file with comma separated typename names")
-        .value_name("type_file")]
-    )
-    .get_matches();
-    
-    let data=matches.is_present("data_file");
-    let types=matches.is_present("type_file");
-    if  !(data&&types) {
-        println!("{}", matches.usage())
-        }
-    else {
-        let data_file = matches.value_of("data_file").unwrap();
-        let type_file = matches.value_of("type_file").unwrap();
-        if let Err(e) = mysqlinsert::insert_files(data_file, type_file) {
-            println!("error {}", e);
-        }
+    //using clap
+    let matches = clap_app!(mysqlinsert =>
+            (version: "1.0")
+            (author: "Keisuke Suzuki <e40keisuke@gmail.com>")
+            (about: "Reads file and inserts data to MySQL")
+            (@arg SEPARATOR: -f --sparator +takes_value
+                            "Sets a filed separator. Default value is ',' ")
+            (@arg TERMINATOR: -l --terminator +takes_value
+                            "Sets a terminator. Default value is '/n' ")
+            (@arg FIELDFILE: +required "Sets an input file for fields")
+            (@arg TYPEFILE: +required "Sets a input file for types"))
+        .get_matches();
+
+    // set separator and terminator to entered value, if options are not
+    // selected, set them to ',', '\n' respectively
+    let separator = matches.value_of("SEPARATOR").unwrap_or(",");
+    let terminator = matches.value_of("TERMINATOR").unwrap_or("/n");
+
+    // get input files from arguments. if either or both values are empty,
+    // displays usage
+    let f_file = matches.value_of("FIELDFILE").unwrap();
+    let t_file = matches.value_of("TYPEFILE").unwrap();
+
+    // it insert_files return an error, it displays the details
+    if let Err(e) = insert_files(f_file, t_file, separator, terminator){
+        println!("error {}", e);
     }
 }

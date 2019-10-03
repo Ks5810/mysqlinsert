@@ -8,21 +8,8 @@ use std::error::Error;
 use std::fmt;
 
 #[derive(Debug)]
-pub struct MyError {
-    message: String,
-}
-
-#[allow(dead_code)]
-impl MyError {
-    fn new(msg: &str) -> MyError {
-        MyError{message: msg.to_string()}
-    }
-    
-    pub fn field_error() -> MyError {
-        MyError {
-            message: String::from("Invalid field information"),
-        }
-    }
+pub struct MyError{
+    message: String
 }
 
 impl fmt::Display for MyError {
@@ -33,6 +20,28 @@ impl fmt::Display for MyError {
 
 impl Error for MyError {
     fn description(&self) -> &str {
-        &self.message
+            &self.message
+        }
+    }
+
+impl MyError {
+    fn new(msg: &str) -> MyError {
+        MyError { message: msg.to_string() }
+    }
+    pub fn e(info: &str) -> MyError {
+        let message = match info {
+            "alpha" => "Alphanumeric value is selected for separator, \
+                           please change it to other values",
+            "multi" => "Separator cannot be more than one character, except \
+                           for tab space '/t'",
+            "field" => "number of fields and types do not match. Please check \
+                        those files",
+            "ter" => "Invalid terminator",
+            "file" => "Invalid file name",
+            "terfi" => "Terminator in files does not match to selected one",
+            "empty" => "last character is empty",
+            _ => "Unknown Error",
+        };
+        MyError { message: format!("Error: {}", message) }
     }
 }

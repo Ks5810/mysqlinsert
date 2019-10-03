@@ -6,8 +6,8 @@ Modification    :
 *******************************************************************************/
 extern crate dotenv;
 extern crate rpassword;
+use::dotenv::*;
 use::rpassword::*;
-
 
 #[derive(Clone, Debug)]
 pub struct Env {
@@ -17,19 +17,23 @@ pub struct Env {
     database: String,
 }
 
+//ask user for password on stdout invisibly, and returns the password enterd
+fn get_password() -> String {
+    prompt_password_stdout("Enter your MySQL password: ").unwrap()
+}
+
 impl Env {
-    fn get_password() -> String {
-        prompt_password_stdout("Enter your user password: ").unwrap()
-    }
+    //reads env from .env return itself
     pub fn get_env() -> Env {
         dotenv::dotenv().ok();
         Env {
-            host: dotenv::var("HOST").unwrap(),
-            user: dotenv::var("USERNAME").unwrap(),
-            password: Env::get_password(),
-            database: dotenv::var("DATABASE").unwrap(),
+            host: var("HOST").unwrap(),
+            user: var("USERNAME").unwrap(),
+            password: get_password(),
+            database: var("DATABASE").unwrap(),
         }
     }
+    //getters
     pub fn host(&self) -> &str { &self.host }
     pub fn user(&self) -> &str { &self.user }
     pub fn password(&self) -> &str { &self.password }
