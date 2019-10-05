@@ -4,44 +4,52 @@ Author          : Keisuke Suzuki
 Created on      : 9/25/19
 Modification    :
 *******************************************************************************/
-use std::error::Error;
+use std::error::Error as StdError;
 use std::fmt;
 
+pub enum ErrorKind {
+    IoError,
+    MatchCount,
+    MatchTer,
+    AlphanumSep,
+    AlphanumTer,
+    MultipleSep,
+    MultipleTer,
+    EmptyChar,
+}
+
 #[derive(Debug)]
-pub struct MyError{
+pub struct Error {
     message: String
 }
-
-impl fmt::Display for MyError {
+impl fmt::Display for Error {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f,"{}",self.message)
+        write!(f,"{}", &self.message)
     }
 }
-
-impl Error for MyError {
+impl StdError for Error {
     fn description(&self) -> &str {
-            &self.message
-        }
+        &self.message
     }
-
-impl MyError {
-    fn new(msg: &str) -> MyError {
-        MyError { message: msg.to_string() }
-    }
-    pub fn e(info: &str) -> MyError {
-        let message = match info {
-            "alpha" => "Alphanumeric value is selected for separator, \
-                           please change it to other values",
-            "multi" => "Separator cannot be more than one character, except \
-                           for tab space '/t'",
-            "field" => "number of fields and types do not match. Please check \
-                        those files",
-            "ter" => "Invalid terminator",
-            "file" => "Invalid file name",
-            "terfi" => "Terminator in files does not match to selected one",
-            "empty" => "last character is empty",
-            _ => "Unknown Error",
+}
+impl Error {
+    pub fn kind(kind: ErrorKind) -> Error {
+        use ErrorKind::*;
+        let message = match kind {
+            IoError     => "an I/O error occurred",
+            MatchCount  => "Length of fields and types do not match. Please \
+                            check those files",
+            MatchTer    => "Terminator in files does not match to selected one",
+            AlphanumSep => "Alphanumeric value is selected for separator, \
+                            please change it to other values",
+            AlphanumTer => "Alphanumeric value is selected for terminator, \
+                            please change it to other values",
+            MultipleSep => "Separator cannot be more than one character, \
+                            except for tab space `\\t`",
+            MultipleTer => "Terminator cannot be more than one character, \
+                            except for tab space `\\n`",
+            EmptyChar   => "Some of the values were empty",
         };
-        MyError { message: format!("Error: {}", message) }
+        Error { message: message.to_string() }
     }
 }

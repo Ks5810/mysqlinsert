@@ -17,7 +17,7 @@ pub struct Env {
     database: String,
 }
 
-//ask user for password on stdout invisibly, and returns the password enterd
+//ask user for password on stdout invisibly, and returns the password entered
 fn get_password() -> String {
     prompt_password_stdout("Enter your MySQL password: ").unwrap()
 }

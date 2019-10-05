@@ -14,6 +14,7 @@ Modification    : Created on 10/2/19
 extern crate clap;
 extern crate mysqlinsert;
 
+use std::process;
 use mysqlinsert::*;
 
 fn main() {
@@ -23,9 +24,9 @@ fn main() {
             (author: "Keisuke Suzuki <e40keisuke@gmail.com>")
             (about: "Reads file and inserts data to MySQL")
             (@arg FIELDSEPARATOR: -f --field +takes_value
-                            "Sets a filed separator. Default value is ',' ")
-            (@arg LINETERMINATOR: -l --line +takes_value
-                            "Sets a terminator. Default value is '/n' ")
+                            "Sets a filed separator. Default value is `,` ")
+            (@arg LINETERMINATOR: -t --line +takes_value
+                            r"Sets a terminator. Default value is `\n` ")
             (@arg FIELDFILE: +required "Sets an input file for fields")
             (@arg TYPEFILE: +required "Sets a input file for types"))
         .get_matches();
@@ -33,7 +34,7 @@ fn main() {
     // set separator and terminator to entered value, if options are not
     // selected, set them to ',', '\n' respectively
     let separator = matches.value_of("FIELDSEPARATOR").unwrap_or(",");
-    let terminator = matches.value_of("LINETERMINATOR").unwrap_or("/n");
+    let terminator = matches.value_of("LINETERMINATOR").unwrap_or(r"\n");
 
     // get input files from arguments. if either or both values are empty,
     // displays usage
@@ -42,6 +43,7 @@ fn main() {
 
     // it insert_files return an error, it displays the details
     if let Err(e) = insert_files(f_file, t_file, separator, terminator){
-        println!("error {}", e);
+        eprintln!("Error: {}", e);
+        process::exit(1);
     }
 }

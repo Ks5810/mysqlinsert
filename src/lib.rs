@@ -7,6 +7,7 @@ Description     : lib.rs for practice app
 *******************************************************************************/
 #[macro_use]
 extern crate command_macros;
+extern crate csv;
 
 pub mod error;
 pub mod my;
