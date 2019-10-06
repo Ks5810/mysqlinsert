@@ -17,13 +17,13 @@ pub struct Env {
     database: String,
 }
 
-//ask user for password on stdout invisibly, and returns the password entered
+// ask user for password on stdout invisibly, and returns the password entered
 fn get_password() -> String {
     prompt_password_stdout("Enter your MySQL password: ").unwrap()
 }
 
 impl Env {
-    //reads env from .env return itself
+    // reads env from .env return itself
     pub fn get_env() -> Env {
         dotenv::dotenv().ok();
         Env {
@@ -33,7 +33,7 @@ impl Env {
             database: var("DATABASE").unwrap(),
         }
     }
-    //getters
+    // getters
     pub fn host(&self) -> &str { &self.host }
     pub fn user(&self) -> &str { &self.user }
     pub fn password(&self) -> &str { &self.password }

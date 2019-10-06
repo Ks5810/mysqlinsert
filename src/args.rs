@@ -5,16 +5,16 @@ Created on      : 9/25/19
 
 *******************************************************************************/
 extern crate itertools;
+
+use itertools::Itertools;
 use std::error::Error as StdError;
-use super::error::Error;
+use std::path::Path;
 use std::fs::File;
 use std::io::{BufReader,BufRead};
+use super::error::{Error,ErrorKind::*};
 
 type BoxResult<T> = Result<T, Box<dyn StdError>>;
 
-pub struct FPair(File, File);
-pub struct SPair(String, String);
-pub struct Vecs<'a>(Vec<&'a str>, Vec <&'a str>);
 
 // helper functions
 
@@ -22,50 +22,55 @@ fn split<'a>(target: &'a str, sep: &str) -> Vec<&'a str> {
     target.split(sep).collect()
 }
 fn split_file_name(target: &str) -> Vec<&str> {
-    target.split(|x| x=='/'||x=='.').collect()
+    target.split(|x| x == '/' || x == '.').collect()
 }
-fn remove_tabspace(s: &mut String) {
-    s.replace('\t',"");
+fn remove_tab(s: &mut String) {
+    s.replace('\t', "");
 }
-fn remove_whitespace(s:&mut String) {
+fn remove_whitespace(s: &mut String) {
     s.retain(|c| c.is_whitespace())
 }
-fn get_ter(tar:&str) -> u8{
-    match tar {
-        r"\n" => b'\n',
-        r"\r" => b'\r',
-        _ => b'\n'
+fn get_ter(s:&str) -> char{
+    match s {
+        r"\n" => '\n',
+        r"\r" => '\r',
+        _ => '\n'
     }
 }
-fn get_sep(sep: &str) -> u8{
-    if sep == r"\t" { b'\t'}
-    else {0}
+fn get_sep(s: &str) -> char{
+    if s == r"\t" { '\t'}
+    else { get_first_char(s) }
 }
-fn get_last(words: &[&str]) -> String {
+fn get_last_char(words: &[&str]) -> String {
     words.last().unwrap().chars().last().unwrap().to_string()
 }
-fn same_len(lhs: &[&str], rhs: &[&str]) -> bool{
-    lhs.len()==rhs.len()
+fn get_first_char(s: &str) -> char{
+    s.chars().nth(0).unwrap()
 }
-fn is_alphanum(val: &str) -> bool {
-    let c = val.chars().next().unwrap();
+fn same_len(lhs: &[&str], rhs: &[&str]) -> bool{
+    lhs.len() == rhs.len()
+}
+fn is_alphanum(s: &str) -> bool {
+    let c = s.chars().next().unwrap();
     c.is_alphanumeric()
 }
-fn carriage_return(string: &str) -> bool {
-    string.find('\r').is_some()
+fn contains_carriage_return(s: &str) -> bool {
+    s.find('\r').is_some()
 }
-fn valid_multi_tar(st: &str) -> bool{
-    st == r"\n"|| st == r"\r"
+fn valid_tar(s: &str) -> bool{
+    s == r"\n"|| s == r"\r"
+}
+fn check_carriage_return(s: &str) -> String {
+    if contains_carriage_return(s) {
+        let tmp: Vec<_> = s.split('\r').collect();
+        tmp[0].clone().to_string()
+    }
+    else { s.to_string() }
 }
 
-fn modify_string(string: &str) -> String{
-    if carriage_return(string) {
-        let tmp: Vec<_> = string.split('\r').collect();
-        let tmp = tmp[0].clone();
-        tmp.to_string()
-    }
-    else {string.to_string()}
-}
+pub struct FPair(File, File);
+pub struct SPair(String, String);
+pub struct VPair<'a>(Vec<&'a str>, Vec <&'a str>);
 
 #[derive(Debug, Clone, Eq, PartialEq)]
 pub struct Args<'a> {
@@ -75,39 +80,17 @@ pub struct Args<'a> {
     ter: &'a str,
 }
 
-use crate::error::ErrorKind::*;
-use itertools::Itertools;
-use std::path::Path;
-
 impl<'a> Args<'a> {
     // constructor
     pub fn new(f_file: &'a str, t_file: &'a str,
         sep: &'a str, ter: &'a str) -> Args<'a> {
         Args { f_file, t_file, sep, ter}
     }
-    pub fn get_files(&self) -> BoxResult<FPair>{
-        Ok(FPair(File::open(Path::new(self.f_file))?,
-              File::open(Path::new(self.t_file))?))
-    }
-    pub fn get_lines(&self, files: FPair) -> BoxResult<SPair> {
-        Ok(SPair(self.get_first_line(files.0)?,
-                 self.get_first_line(files.1)?))
-    }
-
-
-    // gets first line from both filed and type files
-    fn get_first_line(&self, file: File) -> BoxResult<String> {
-        let mut string=String::new();
-        let val = BufReader::new(file).read_line(&mut string)?;
-        let ter=self.ter.chars().nth(0).unwrap();
-        let res = modify_string(&string);
-        Ok(res)
-    }
     // checks fields and returns error if invalid
-    pub fn check_fields(&self, vecs: &Vecs) -> BoxResult<()> {
+    pub fn check_fields(&self, vecs: &VPair) -> BoxResult<()> {
         if !same_len(&vecs.0,&vecs.1) {
             return Err(Box::new(Error::kind(MatchCount)))
-        } else if !valid_multi_tar(self.ter) && get_last(&vecs.0) != self.ter {
+        } else if !valid_tar(self.ter) && get_last_char(&vecs.0) != self.ter {
             return Err(Box::new(Error::kind(MatchTer)))
         }
         Ok(())
@@ -124,7 +107,7 @@ impl<'a> Args<'a> {
     pub fn check_terminator(&self) -> BoxResult<()> {
         if self.ter.len() == 1 { if is_alphanum(&self.ter) {
            return Err(Box::new(Error::kind(AlphanumTer))) }
-        } else if !valid_multi_tar(&self.ter) {
+        } else if !valid_tar(&self.ter) {
             return Err(Box::new(Error::kind(MultipleTer)))
         } Ok(())
     }
@@ -134,18 +117,35 @@ impl<'a> Args<'a> {
         vec.pop().ok_or(Error::kind(IoError))?;
         Ok(vec.last().ok_or(Error::kind(IoError))?)
     }
-
+    // gets pair of files if successfully opened
+    pub fn get_file_pair(&self) -> BoxResult<FPair>{
+        Ok(FPair(File::open(Path::new(self.f_file))?,
+                 File::open(Path::new(self.t_file))?))
+    }
+    // get pair of strings that contains first lines of files
+    pub fn get_line_pair(&self, files: FPair) -> BoxResult<SPair> {
+        Ok(SPair(self.get_first_line(files.0)?,
+                 self.get_first_line(files.1)?))
+    }
+    // gets first line from both filed and type files
+    fn get_first_line(&self, file: File) -> BoxResult<String> {
+        let mut line=String::new();
+        let _len = BufReader::new(file).read_line(&mut line)?;
+        //if carriage return found, get line
+        line = check_carriage_return(&line);
+        Ok(line)
+    }
+    // get query string from lines
     pub fn get_query(&self, lines: SPair) -> BoxResult<String> {
-        let vecs = Vecs(split(&lines.0,self.sep),
-                        split(&lines.1,self.sep));
-        println!("vecs0: {:?}, vecs1: {:?}",vecs.0,vecs.1);
+        let vecs = VPair(split(&lines.0, self.sep),
+                         split(&lines.1,self.sep));
         self.check_fields(&vecs)?;
         let query: Vec<_> = vecs.0.iter().zip(vecs.1.iter())
                                 .map(|(f, t)| format!("{} {}", *f, *t)).collect();
         Ok(format!("create table if not exists {}({})", self.get_table_name()?,
                    query.iter().join(", ")))
     }
-    //prints information
+    // prints information
     pub fn print_info(&self){
         println!("\tData File: {}\n\
                   \tType File: {}\n\
@@ -160,8 +160,8 @@ pub fn get_query(args: Args) -> BoxResult<String> {
     args.print_info();
     args.check_separator()?;
     args.check_terminator()?;
-    let files = args.get_files()?;
-    let lines = args.get_lines(files)?;
+    let files = args.get_file_pair()?;
+    let lines = args.get_line_pair(files)?;
     let query = args.get_query(lines)?;
     Ok(query)
 }

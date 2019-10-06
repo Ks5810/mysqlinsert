@@ -7,8 +7,10 @@ Modification    :
 extern crate mysql;
 
 pub mod config;
+
 use mysql::{Opts,OptsBuilder,Pool};
 use config::Env;
+
 type BoxResult<T> = Result<T, Box<dyn std::error::Error>>;
 
 pub struct Commands {
@@ -39,7 +41,7 @@ impl MysqlInsert {
     }
     // Insert data using mysql command 'mysqlimport'
     pub fn insert(&self, file_name: &str, sep: &str, ter: &str)
-        -> BoxResult<()>{
+            -> BoxResult<()>{
         let commands = self.get_commands(sep, ter);
 
         cmd!(mysqlimport ("--local") ("--ignore-lines=1")
